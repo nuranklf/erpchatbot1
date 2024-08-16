@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 800px;
+            max-width: 100%;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            color: #333333;
+        }
+        .content p {
+            margin-bottom: 20px;
+        }
+        .assistant-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        .chatbox {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        .chatbox-header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+        }
+        .chatbox-body {
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-bottom: 1px solid #dddddd;
+        }
+        .chatbox-body div {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333333;
+        }
+        .chatbox-body .user-message {
+            text-align: right;
+            color: #007bff;
+        }
+        .chatbox-footer {
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .chatbox-footer input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #cccccc;
+            font-size: 14px;
+        }
+        .chatbox-footer button {
+            padding: 10px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .chatbox-footer button:hover {
+            background-color: #0056b3;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">ERP Chatbot</div>
+        <div class="content">
+            <p>Willkommen im ERP-System. Nutzen Sie den virtuellen Assistenten unten rechts, um Ihre Fragen zu stellen und schnelle Antworten zu erhalten.</p>
+        </div>
+    </div>
+    
+    <!-- Virtueller Assistent -->
+    <div class="assistant-icon" onclick="toggleChatbox()">💬</div>
+    
+    <!-- Chatbox -->
+    <div class="chatbox" id="chatbox">
+        <div class="chatbox-header">Virtueller Assistent</div>
+        <div class="chatbox-body" id="chatbox-body">
+            <div id="chatbot-intro">Lexi: Hallo! Ich bin hier, um Ihnen zu helfen.</div>
+        </div>
+        <div class="chatbox-footer">
+            <input type="text" id="user-input" placeholder="Stelle deine Frage...">
+            <button onclick="sendMessage()">Absenden</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleChatbox() {
+            const chatbox = document.getElementById('chatbox');
+            chatbox.style.display = chatbox.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function sendMessage(message = null) {
+            const userInput = message || document.getElementById('user-input').value;
+            if (userInput.trim() === '') return;
+            
+            // Benutzerfrage anzeigen
+            const chatboxBody = document.getElementById('chatbox-body');
+            const userMessage = document.createElement('div');
+            userMessage.className = 'user-message';
+            userMessage.textContent = 'Du: ' + userInput;
+            chatboxBody.appendChild(userMessage);
+
+            // Anfrage an den Server senden
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'user_input=' + encodeURIComponent(userInput),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Antwort des Chatbots anzeigen
+                const chatbotMessage = document.createElement('div');
+                chatbotMessage.innerHTML = 'Lexi: ' + data.answer;  // Verwenden von innerHTML für Buttons
+                chatboxBody.appendChild(chatbotMessage);
+                chatboxBody.scrollTop = chatboxBody.scrollHeight; // Scrollt zum neuesten Eintrag
+            });
+
+            document.getElementById('user-input').value = ''; // Eingabefeld leeren
+        }
+    </script>
+</body>
+</html>
